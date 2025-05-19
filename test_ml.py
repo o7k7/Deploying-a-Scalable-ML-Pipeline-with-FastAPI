@@ -1,28 +1,37 @@
+import numpy as np
 import pytest
-# TODO: add necessary import
+from sklearn.exceptions import NotFittedError
 
-# TODO: implement the first test. Change the function name and input as needed
-def test_one():
-    """
-    # add description for the first test
-    """
-    # Your code here
-    pass
+from ml.model import train_model, compute_model_metrics
 
 
-# TODO: implement the second test. Change the function name and input as needed
-def test_two():
-    """
-    # add description for the second test
-    """
-    # Your code here
-    pass
+@pytest.fixture
+def sample_training_data():
+    X_train = np.array([[1, 2], [3, 4], [5, 6], [7, 8]])
+    y_train = np.array([0, 1, 0, 1])
+    return X_train, y_train
 
+def test_train_model_returns_model(sample_training_data):
+    X_train, y_train = sample_training_data
+    model = train_model(X_train, y_train)
+    assert model is not None
+    assert hasattr(model, "predict")
 
-# TODO: implement the third test. Change the function name and input as needed
-def test_three():
-    """
-    # add description for the third test
-    """
-    # Your code here
-    pass
+def test_train_model_is_fitted(sample_training_data):
+    X_train, y_train = sample_training_data
+    model = train_model(X_train, y_train)
+    assert hasattr(model, "coef_")
+    try:
+        model.predict(X_train)
+    except NotFittedError:
+        pytest.fail("Model training was incomplete")
+    except Exception as e:
+        pytest.fail(f"Model.predict(): {e}")
+
+def test_compute_model_metrics_perfect_prediction():
+    y_true = np.array([0, 1, 0, 1])
+    y_preds = np.array([0, 1, 0, 1])
+    precision, recall, fbeta = compute_model_metrics(y_true, y_preds)
+    assert precision == 1.0
+    assert recall == 1.0
+    assert fbeta == 1.0
